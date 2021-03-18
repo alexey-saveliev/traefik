@@ -1,0 +1,41 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    restart: always
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--providers.file.directory=/etc/traefik"
+      # Let's Encrypt Production
+      - "--certificatesresolvers.LetsEncrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.LetsEncrypt.acme.httpchallenge.entrypoint=http"
+      - "--certificatesresolvers.LetsEncrypt.acme.email=noc@vectorinfo.ru"
+      - "--certificatesresolvers.LetsEncrypt.acme.storage=/letsencrypt/acme.json"
+      # Let's Encrypt Staging 
+      - "--certificatesresolvers.LetsEncryptStage.acme.httpchallenge=true"
+      - "--certificatesresolvers.LetsEncryptStage.acme.httpchallenge.entrypoint=http"
+      - "--certificatesresolvers.LetsEncryptStage.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.LetsEncryptStage.acme.email=noc@vectorinfo.ru"
+      - "--certificatesresolvers.LetsEncryptStage.acme.storage=/letsencrypt/acme.json"
+
+    networks:
+      - "traefik"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "./traefik:/etc/traefik:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+networks:
+  traefik:
+    external: true
